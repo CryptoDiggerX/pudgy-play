@@ -1,8 +1,5 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/index.html", "destination": "/index.html" }
-  ],
+  "outputDirectory": "public",
   "headers": [
     {
       "source": "/.well-known/(.*)",
