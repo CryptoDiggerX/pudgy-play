@@ -57,6 +57,19 @@
     .btn-primary{flex:1;border:none;border-radius:12px;padding:12px;background:linear-gradient(180deg,var(--accent2),var(--accent));color:#fff;font-weight:900;font-size:14px}
     .tap-hint{position:absolute;bottom:28px;right:10px;font-size:10px;color:rgba(255,255,255,.4);animation:blink 1.5s ease-in-out infinite;}
     @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+    .tab-screen{display:none;position:fixed;inset:0;z-index:4;background:radial-gradient(circle at top,#19538a 0%,#0c2f57 35%,#071427 100%);align-items:center;justify-content:center;padding:18px;padding-bottom:80px;}
+    .tab-screen.open{display:flex;}
+    .tab-card{width:min(92vw,400px);background:#0c3761ee;border:1px solid #7da7c9aa;border-radius:22px;padding:24px 20px;backdrop-filter:blur(20px);}
+    .tab-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:20px;color:#fff;}
+    .quest-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#061a33;border-radius:12px;margin-bottom:8px;font-size:14px;color:#c9dbf4;}
+    .q-reward{color:#52f7a7;font-weight:800;font-size:12px;}
+    .lb-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#061a33;border-radius:12px;margin-bottom:8px;font-size:14px;color:#c9dbf4;}
+    .lb-rank{width:24px;height:24px;background:#9f4dff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-right:10px;}
+    .lb-score{color:#52f7a7;font-weight:800;}
+    .info-text{font-size:14px;color:#c9dbf4;text-align:center;line-height:1.6;margin-bottom:16px;}
+    .airdrop-stat{text-align:center;padding:14px;background:#061a33;border-radius:12px;margin-bottom:10px;font-size:12px;color:#c9dbf4;letter-spacing:1px;}
+    .shop-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#061a33;border-radius:12px;margin-bottom:8px;font-size:14px;color:#c9dbf4;}
+    .shop-price{color:#f7c752;font-weight:800;font-size:12px;}
   </style>
   <!-- Farcaster SDK: dismisses splash screen via sdk.actions.ready() -->
   <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
@@ -84,13 +97,63 @@
     <div class="hint" id="hint">Confirm the Base ETH payment in your wallet to start.</div>
   </section>
   <nav class="bottom-nav">
-    <div class="tab active">Play</div>
-    <div class="tab">Quests</div>
-    <div class="tab">Leaderboard</div>
-    <div class="tab">Airdrop</div>
-    <div class="tab">Invite</div>
-    <div class="tab">Shop</div>
+    <div class="tab active" id="tabPlay" onclick="switchTab('play')">Play</div>
+    <div class="tab" id="tabQuests" onclick="switchTab('quests')">Quests</div>
+    <div class="tab" id="tabLeaderboard" onclick="switchTab('leaderboard')">Leaderboard</div>
+    <div class="tab" id="tabAirdrop" onclick="switchTab('airdrop')">Airdrop</div>
+    <div class="tab" id="tabInvite" onclick="switchTab('invite')">Invite</div>
+    <div class="tab" id="tabShop" onclick="switchTab('shop')">Shop</div>
   </nav>
+
+  <!-- Tab Screens -->
+  <div id="screenQuests" class="tab-screen">
+    <div class="tab-card">
+      <div class="tab-title">📋 Quests</div>
+      <div class="quest-item">🎯 Play 5 games <span class="q-reward">+50 pts</span></div>
+      <div class="quest-item">🏆 Score 500+ <span class="q-reward">+100 pts</span></div>
+      <div class="quest-item">⚡ Collect 10 coins <span class="q-reward">+30 pts</span></div>
+      <div class="quest-item">🔥 3-day streak <span class="q-reward">+200 pts</span></div>
+    </div>
+  </div>
+
+  <div id="screenLeaderboard" class="tab-screen">
+    <div class="tab-card">
+      <div class="tab-title">🏆 Leaderboard</div>
+      <div class="lb-item"><span class="lb-rank">1</span><span>cdigr.eth</span><span class="lb-score">229</span></div>
+      <div class="lb-item"><span class="lb-rank">2</span><span>player2.eth</span><span class="lb-score">198</span></div>
+      <div class="lb-item"><span class="lb-rank">3</span><span>pudgy.eth</span><span class="lb-score">176</span></div>
+      <div class="lb-item"><span class="lb-rank">4</span><span>base.eth</span><span class="lb-score">154</span></div>
+      <div class="lb-item"><span class="lb-rank">5</span><span>jump.eth</span><span class="lb-score">142</span></div>
+    </div>
+  </div>
+
+  <div id="screenAirdrop" class="tab-screen">
+    <div class="tab-card">
+      <div class="tab-title">🪂 Airdrop</div>
+      <div class="info-text">Play games to earn airdrop points.<br>Top players get $PUDGY token rewards!</div>
+      <div class="airdrop-stat">Your Points<br><strong style="font-size:28px;color:#52f7a7">0</strong></div>
+      <div class="airdrop-stat">Next Drop<br><strong style="font-size:18px;color:#f7c752">TBA</strong></div>
+    </div>
+  </div>
+
+  <div id="screenInvite" class="tab-screen">
+    <div class="tab-card">
+      <div class="tab-title">👥 Invite</div>
+      <div class="info-text">Invite friends and earn bonus points for every friend who plays!</div>
+      <div style="margin-top:16px;background:#061a33;border-radius:12px;padding:12px;font-size:12px;color:#52f7a7;word-break:break-all">https://pudgy-play.vercel.app</div>
+      <button onclick="copyInvite()" style="margin-top:12px;width:100%;border:none;border-radius:12px;padding:12px;background:linear-gradient(180deg,#c86bff,#9f4dff);color:#fff;font-weight:800;font-size:14px;cursor:pointer">Copy Invite Link</button>
+    </div>
+  </div>
+
+  <div id="screenShop" class="tab-screen">
+    <div class="tab-card">
+      <div class="tab-title">🛒 Shop</div>
+      <div class="shop-item">🐧 Skin: Arctic Pudgy<span class="shop-price">0.001 ETH</span></div>
+      <div class="shop-item">⚡ Double Speed<span class="shop-price">0.0005 ETH</span></div>
+      <div class="shop-item">🛡️ Shield Power-up<span class="shop-price">0.0005 ETH</span></div>
+      <div class="shop-item">🪙 Coin Magnet<span class="shop-price">0.0003 ETH</span></div>
+    </div>
+  </div>
 </div>
 
 <div class="game-overlay" id="gameOverlay">
