@@ -9,7 +9,7 @@
     "name": "Pudgy Jump",
     "description": "Pay to play. Jump and avoid obstacles. Built on Base.",
     "homeUrl": "https://pudgy-play.vercel.app",
-    "iconUrl": "https://pudgy-play.vercel.app/icon.png",
+    "iconUrl": "https://pudgy-play.vercel.app/icon.svg",
     "canonicalDomain": "pudgy-play.vercel.app",
     "requiredChains": ["eip155:8453"],
     "requiredCapabilities": ["actions.ready"],
