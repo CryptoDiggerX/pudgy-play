@@ -1,0 +1,19 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Pudgy Jump",
+    "description": "Pay to play. Jump and avoid obstacles. Built on Base.",
+    "homeUrl": "https://pudgy-play.vercel.app",
+    "iconUrl": "https://pudgy-play.vercel.app/icon.png",
+    "canonicalDomain": "pudgy-play.vercel.app",
+    "requiredChains": ["eip155:8453"],
+    "requiredCapabilities": ["actions.ready"],
+    "primaryCategory": "games",
+    "tags": ["game", "base", "farcaster", "jump"]
+  }
+}
