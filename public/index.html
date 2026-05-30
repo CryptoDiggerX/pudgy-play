@@ -58,6 +58,9 @@
     .tap-hint{position:absolute;bottom:28px;right:10px;font-size:10px;color:rgba(255,255,255,.4);animation:blink 1.5s ease-in-out infinite;}
     @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
   </style>
+  <!-- Farcaster SDK: dismisses splash screen via sdk.actions.ready() -->
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -114,19 +117,19 @@
 </div>
 
 <script>
-// ── Send ready signal to Warpcast via postMessage ──
-// This dismisses the splash screen without needing any SDK
-function sendReady() {
+// ── Call sdk.actions.ready() to dismiss Warpcast splash screen ──
+window.addEventListener("load", function() {
   try {
-    window.parent.postMessage({ type: "frameReady" }, "*");
-    window.parent.postMessage({ type: "ready" }, "*");
-    // Also try Farcaster specific format
-    window.parent.postMessage(JSON.stringify({ method: "ready" }), "*");
-  } catch(e) {}
-}
-sendReady();
-document.addEventListener("DOMContentLoaded", sendReady);
-window.addEventListener("load", sendReady);
+    // miniapp-sdk UMD global is "miniapp"
+    if (window.miniapp && window.miniapp.sdk && window.miniapp.sdk.actions) {
+      window.miniapp.sdk.actions.ready();
+    }
+    // frame-sdk UMD global is "frame"
+    if (window.frame && window.frame.sdk && window.frame.sdk.actions) {
+      window.frame.sdk.actions.ready();
+    }
+  } catch(e) { console.warn("SDK ready error:", e); }
+});
 
 // ── Game logic ──
 (function () {
