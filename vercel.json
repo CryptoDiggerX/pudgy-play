@@ -1,6 +1,9 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(?!icon.svg|icon.png|.well-known)(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
@@ -8,6 +11,12 @@
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
+      "source": "/icon.svg",
+      "headers": [
+        { "key": "Content-Type", "value": "image/svg+xml" }
       ]
     }
   ]
