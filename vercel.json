@@ -1,22 +1,10 @@
 {
-  "rewrites": [
-    {
-      "source": "/(?!icon.svg|icon.png|.well-known)(.*)",
-      "destination": "/index.html"
-    }
-  ],
   "headers": [
     {
-      "source": "/.well-known/farcaster.json",
+      "source": "/.well-known/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Content-Type", "value": "application/json" }
-      ]
-    },
-    {
-      "source": "/icon.svg",
-      "headers": [
-        { "key": "Content-Type", "value": "image/svg+xml" }
       ]
     }
   ]
