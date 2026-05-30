@@ -146,14 +146,37 @@ window.addEventListener("load", function() {
   ethBtn.addEventListener("click",function(){payMode="eth";renderMode();});
   usdcBtn.addEventListener("click",function(){payMode="usdc";renderMode();});
 
+  // Get wallet provider — Warpcast SDK or MetaMask
+  function getProvider() {
+    // 1. Warpcast miniapp-sdk provider
+    if (window.miniapp && window.miniapp.sdk && window.miniapp.sdk.wallet && window.miniapp.sdk.wallet.ethProvider) {
+      return window.miniapp.sdk.wallet.ethProvider;
+    }
+    // 2. Warpcast frame-sdk provider
+    if (window.frame && window.frame.sdk && window.frame.sdk.wallet && window.frame.sdk.wallet.ethProvider) {
+      return window.frame.sdk.wallet.ethProvider;
+    }
+    // 3. MetaMask / injected
+    if (typeof window.ethereum !== "undefined") {
+      return window.ethereum;
+    }
+    return null;
+  }
+
   function doPayment(){
-    if(typeof window.ethereum==="undefined")return Promise.reject(new Error("No wallet detected. Open in Warpcast or install MetaMask."));
-    return window.ethereum.request({method:"eth_requestAccounts"}).then(function(accs){
-      var from=accs[0];
-      return window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN}]}).catch(function(e){
-        if(e.code===4902||e.code===-32603){return window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:BASE_CHAIN,chainName:"Base",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]}]});}
+    var provider = getProvider();
+    if (!provider) return Promise.reject(new Error("No wallet detected. Open in Warpcast or install MetaMask."));
+
+    return provider.request({method:"eth_requestAccounts"}).then(function(accs){
+      var from = accs[0];
+      return provider.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN}]}).catch(function(e){
+        if(e.code===4902||e.code===-32603){
+          return provider.request({method:"wallet_addEthereumChain",params:[{chainId:BASE_CHAIN,chainName:"Base",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]}]});
+        }
         throw e;
-      }).then(function(){return window.ethereum.request({method:"eth_sendTransaction",params:[{from:from,to:RECEIVER,value:PRICE_HEX,chainId:BASE_CHAIN}]});});
+      }).then(function(){
+        return provider.request({method:"eth_sendTransaction",params:[{from:from,to:RECEIVER,value:PRICE_HEX,chainId:BASE_CHAIN}]});
+      });
     });
   }
 
