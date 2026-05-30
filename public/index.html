@@ -7,24 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pudgy Jump</title>
   <meta name="description" content="Pudgy Jump — Base-powered jump mini game on Farcaster." />
-
-  <!-- OG tags -->
   <meta property="og:title" content="Pudgy Jump" />
-  <meta property="og:description" content="Pay to play. Jump and avoid obstacles. Built on Base." />
+  <meta property="og:description" content="Pay to play. Jump. Built on Base." />
   <meta property="og:image" content="https://i.imgur.com/48neImL.png" />
+  <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
+  <meta name="fc:frame" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
 
-  <!-- Farcaster Mini App embed tag (correct format) -->
-  <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"🐧 Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
-  <meta name="fc:frame" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"🐧 Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
+  <!-- Farcaster SDK — must call ready() to dismiss splash screen -->
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@latest/dist/index.umd.min.js"></script>
 
   <style>
-    :root{
-      --bg1:#071427;--bg2:#0c2f57;
-      --card:#0c3761ee;--cardBorder:#7da7c9aa;
-      --accent:#9f4dff;--accent2:#c86bff;
-      --text:#fff;--muted:#c9dbf4;--success:#52f7a7;
-      --shadow:0 18px 50px rgba(0,0,0,.38);
-    }
+    :root{--bg1:#071427;--bg2:#0c2f57;--card:#0c3761ee;--cardBorder:#7da7c9aa;--accent:#9f4dff;--accent2:#c86bff;--text:#fff;--muted:#c9dbf4;--success:#52f7a7;--shadow:0 18px 50px rgba(0,0,0,.38);}
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;font-family:system-ui,sans-serif;background:radial-gradient(circle at top,#19538a 0%,var(--bg2) 35%,var(--bg1) 100%);color:var(--text);overflow:hidden;}
     button{font:inherit;cursor:pointer}
@@ -75,7 +68,6 @@
 <div class="app">
   <div class="blur-bg"></div>
   <div class="top-title">Pudgy Jump</div>
-
   <section class="modal" id="payModal">
     <div class="center">
       <div class="pill">BASE</div>
@@ -93,7 +85,6 @@
     <button class="start-btn" id="startBtn" type="button">PAY $0.03 &amp; START</button>
     <div class="hint" id="hint">Confirm the Base ETH payment in your wallet to start.</div>
   </section>
-
   <nav class="bottom-nav">
     <div class="tab active">Play</div>
     <div class="tab">Quests</div>
@@ -128,17 +119,40 @@
 </div>
 
 <script>
+// ── 1. Call sdk.actions.ready() IMMEDIATELY to dismiss Warpcast splash screen
+(function() {
+  try {
+    var sdk = window.MiniAppSDK || window.FarcasterMiniAppSDK || (window.farcaster && window.farcaster.sdk);
+    if (sdk && sdk.actions && typeof sdk.actions.ready === "function") {
+      sdk.actions.ready();
+    }
+  } catch(e) {}
+  // Fallback: try again after DOM loads
+  window.addEventListener("load", function() {
+    try {
+      var sdk = window.MiniAppSDK || window.FarcasterMiniAppSDK || (window.farcaster && window.farcaster.sdk);
+      if (sdk && sdk.actions && typeof sdk.actions.ready === "function") {
+        sdk.actions.ready();
+      }
+    } catch(e) {}
+  });
+})();
+
+// ── 2. Game logic
 (function () {
   "use strict";
   var RECEIVER   = "0x580Aab97021D7D379c8d26444eAae332C3014ba7";
   var BASE_CHAIN = "0x2105";
   var PRICE_HEX  = "0x1B48EB57E000";
+
   var ethBtn=document.getElementById("ethBtn"),usdcBtn=document.getElementById("usdcBtn"),startBtn=document.getElementById("startBtn"),feeText=document.getElementById("feeText"),hint=document.getElementById("hint"),payModal=document.getElementById("payModal"),gameOverlay=document.getElementById("gameOverlay"),gameArea=document.getElementById("gameArea"),runner=document.getElementById("runner"),jumpBtn=document.getElementById("jumpBtn"),resetBtn=document.getElementById("resetBtn"),scoreDisplay=document.getElementById("scoreDisplay"),bestDisplay=document.getElementById("bestDisplay"),gameOverMsg=document.getElementById("gameOverMsg"),finalScore=document.getElementById("finalScore");
   var payMode="eth",paid=false,best=parseInt(localStorage.getItem("pj_best")||"0"),score=0,gameSpeed=2.5,frameCount=0,spawnTimer=0,coinTimer=0,gameRunning=false,isJumping=false,isDead=false,obstacles=[],coins=[],raf=null;
   bestDisplay.textContent=best;
+
   function renderMode(){ethBtn.classList.toggle("active",payMode==="eth");usdcBtn.classList.toggle("active",payMode==="usdc");feeText.textContent=payMode==="eth"?"~0.0000100 ETH":"USDC $0.03";}
   ethBtn.addEventListener("click",function(){payMode="eth";renderMode();});
   usdcBtn.addEventListener("click",function(){payMode="usdc";renderMode();});
+
   function doPayment(){
     if(typeof window.ethereum==="undefined")return Promise.reject(new Error("No wallet detected. Open in Warpcast or install MetaMask."));
     return window.ethereum.request({method:"eth_requestAccounts"}).then(function(accs){
@@ -149,10 +163,12 @@
       }).then(function(){return window.ethereum.request({method:"eth_sendTransaction",params:[{from:from,to:RECEIVER,value:PRICE_HEX,chainId:BASE_CHAIN}]});});
     });
   }
+
   startBtn.addEventListener("click",function(){
     startBtn.disabled=true;startBtn.textContent="PROCESSING...";hint.textContent="Confirm payment in your wallet...";
     doPayment().then(function(){paid=true;payModal.style.display="none";gameOverlay.style.display="flex";startRun();}).catch(function(e){startBtn.disabled=false;startBtn.textContent="PAY $0.03 & START";hint.textContent=e.code===4001?"Payment rejected. Try again.":(e.message||"Payment failed.");});
   });
+
   function startRun(){
     obstacles.forEach(function(o){o.el.remove();});coins.forEach(function(c){c.el.remove();});
     obstacles=[];coins=[];score=0;gameSpeed=2.5;frameCount=0;spawnTimer=0;coinTimer=0;
@@ -160,6 +176,7 @@
     gameOverMsg.style.display="none";scoreDisplay.textContent="0";
     if(raf)cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
   }
+
   function loop(){
     if(!gameRunning)return;frameCount++;
     if(frameCount%180===0)gameSpeed=Math.min(gameSpeed+0.35,9);
@@ -173,11 +190,13 @@
     coins=coins.filter(function(c){var cL=aR.left+c.x,cT=aR.top+c.y;if(rR.right-4>cL&&rR.left+4<cL+15&&rR.bottom-4>cT&&rR.top+4<cT+15){score+=15;c.el.remove();return false;}return true;});
     raf=requestAnimationFrame(loop);
   }
+
   function spawnObs(){var el=document.createElement("div");var h=26+Math.random()*36,x=gameArea.offsetWidth+8;el.style.cssText="position:absolute;left:"+x+"px;bottom:20px;width:20px;height:"+h+"px;border-radius:6px 6px 4px 4px;background:linear-gradient(180deg,#52f7a7,#16b36f);box-shadow:0 0 10px rgba(82,247,167,.3);";gameArea.appendChild(el);obstacles.push({el:el,x:x,h:h});}
   function spawnCoin(){var el=document.createElement("div");var x=gameArea.offsetWidth+8,y=gameArea.offsetHeight-20-50-Math.random()*60;el.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe566,#d4a017);border:1.5px solid rgba(255,255,255,.6);box-shadow:0 0 8px rgba(255,215,0,.5);";gameArea.appendChild(el);coins.push({el:el,x:x,y:y});}
   function die(){gameRunning=false;isDead=true;runner.classList.add("dead");if(score>best){best=score;localStorage.setItem("pj_best",best);bestDisplay.textContent=best;}finalScore.textContent="Score: "+score+(score===best&&score>0?"  \uD83C\uDFC6 New Best!":"");gameOverMsg.style.display="flex";}
   function jump(){if(isDead||isJumping)return;isJumping=true;runner.classList.remove("jump");void runner.offsetWidth;runner.classList.add("jump");setTimeout(function(){isJumping=false;},480);}
-  jumpBtn.addEventListener("click",jump);gameArea.addEventListener("click",jump);
+  jumpBtn.addEventListener("click",jump);
+  gameArea.addEventListener("click",jump);
   document.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();jump();}});
   resetBtn.addEventListener("click",function(){if(paid){startRun();}else{gameOverlay.style.display="none";payModal.style.display="";}});
   renderMode();
