@@ -7,9 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pudgy Jump</title>
   <meta name="description" content="Pudgy Jump — Base-powered jump mini game on Farcaster." />
-  <meta property="og:title" content="Pudgy Jump" />
-  <meta property="og:image" content="https://pudgy-play.vercel.app/icon.svg" />
+
+  <!-- Farcaster Mini App tags -->
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://pudgy-play.vercel.app/icon.svg","button":{"title":"🐧 Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://pudgy-play.vercel.app/icon.svg","splashBackgroundColor":"#08172b"}}}' />
   <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://pudgy-play.vercel.app/icon.svg","button":{"title":"Play Pudgy Jump","action":{"type":"launch_miniapp"}},"splashImageUrl":"https://pudgy-play.vercel.app/icon.svg","splashBackgroundColor":"#08172b","homeUrl":"https://pudgy-play.vercel.app"}' />
+
+  <meta property="og:title" content="Pudgy Jump" />
+  <meta property="og:description" content="Pay to play. Jump and avoid obstacles. Built on Base." />
+  <meta property="og:image" content="https://pudgy-play.vercel.app/icon.svg" />
+
   <style>
     :root{
       --bg1:#071427;--bg2:#0c2f57;
@@ -38,11 +44,11 @@
     .toggle{display:flex;gap:8px;margin-bottom:14px}
     .toggle button{flex:1;border:none;border-radius:12px;padding:11px 8px;background:#0a2443;color:#dbe8f8;font-weight:700;font-size:13px;transition:all .15s}
     .toggle button.active{background:#153a67;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);}
-    .start-btn{width:100%;border:none;border-radius:14px;padding:15px;background:linear-gradient(180deg,var(--accent2),var(--accent));color:#fff;font-weight:900;font-size:16px;box-shadow:0 8px 22px rgba(159,77,255,.4);transition:opacity .15s}
+    .start-btn{width:100%;border:none;border-radius:14px;padding:15px;background:linear-gradient(180deg,var(--accent2),var(--accent));color:#fff;font-weight:900;font-size:16px;box-shadow:0 8px 22px rgba(159,77,255,.4);}
     .start-btn:disabled{opacity:.5;cursor:not-allowed}
     .hint{margin-top:10px;font-size:12px;color:#bfd0e7;text-align:center;min-height:18px}
     .bottom-nav{position:absolute;z-index:2;left:50%;transform:translateX(-50%);bottom:14px;width:min(92vw,460px);background:rgba(17,52,90,.75);border:1px solid rgba(145,179,215,.3);border-radius:18px;padding:8px;display:flex;gap:4px;backdrop-filter:blur(16px);}
-    .tab{flex:1;text-align:center;padding:9px 0;border-radius:12px;font-size:11px;font-weight:700;color:#e6efff;user-select:none;transition:background .15s}
+    .tab{flex:1;text-align:center;padding:9px 0;border-radius:12px;font-size:11px;font-weight:700;color:#e6efff;user-select:none;}
     .tab.active{background:linear-gradient(180deg,#b05cff,#7a3cff)}
     .game-overlay{display:none;position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:16px;}
     .game-card{width:min(92vw,400px);background:#0b2446;border:1px solid rgba(125,167,201,.3);border-radius:22px;padding:20px;box-shadow:var(--shadow);text-align:center;}
@@ -59,7 +65,7 @@
     .jump{animation:jump .48s cubic-bezier(.36,.07,.19,.97)}
     @keyframes jump{0%{transform:translateY(0) rotate(0deg)}40%{transform:translateY(-75px) rotate(-8deg)}100%{transform:translateY(0) rotate(0deg)}}
     .game-over-msg{display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);border-radius:16px;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:2;}
-    .game-over-msg h3{font-size:22px;color:#ff6b6b;text-shadow:0 0 20px rgba(255,100,100,.5)}
+    .game-over-msg h3{font-size:22px;color:#ff6b6b;}
     .game-over-msg span{font-size:13px;color:var(--muted)}
     .game-footer{display:flex;gap:10px;margin-top:12px}
     .btn-secondary{flex:1;border:none;border-radius:12px;padding:12px;background:#17365e;color:#fff;font-weight:800;font-size:14px}
@@ -119,7 +125,7 @@
     </div>
     <div class="game-footer">
       <button class="btn-secondary" id="jumpBtn" type="button">&#8679; Jump</button>
-      <button class="btn-primary"   id="resetBtn" type="button">&#8635; Restart</button>
+      <button class="btn-primary" id="resetBtn" type="button">&#8635; Restart</button>
     </div>
   </div>
 </div>
