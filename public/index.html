@@ -8,14 +8,9 @@
   <title>Pudgy Jump</title>
   <meta name="description" content="Pudgy Jump — Base-powered jump mini game on Farcaster." />
   <meta property="og:title" content="Pudgy Jump" />
-  <meta property="og:description" content="Pay to play. Jump. Built on Base." />
   <meta property="og:image" content="https://i.imgur.com/48neImL.png" />
   <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
   <meta name="fc:frame" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
-
-  <!-- Farcaster SDK — must call ready() to dismiss splash screen -->
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@latest/dist/index.umd.min.js"></script>
-
   <style>
     :root{--bg1:#071427;--bg2:#0c2f57;--card:#0c3761ee;--cardBorder:#7da7c9aa;--accent:#9f4dff;--accent2:#c86bff;--text:#fff;--muted:#c9dbf4;--success:#52f7a7;--shadow:0 18px 50px rgba(0,0,0,.38);}
     *{box-sizing:border-box;margin:0;padding:0}
@@ -119,26 +114,21 @@
 </div>
 
 <script>
-// ── 1. Call sdk.actions.ready() IMMEDIATELY to dismiss Warpcast splash screen
-(function() {
+// ── Send ready signal to Warpcast via postMessage ──
+// This dismisses the splash screen without needing any SDK
+function sendReady() {
   try {
-    var sdk = window.MiniAppSDK || window.FarcasterMiniAppSDK || (window.farcaster && window.farcaster.sdk);
-    if (sdk && sdk.actions && typeof sdk.actions.ready === "function") {
-      sdk.actions.ready();
-    }
+    window.parent.postMessage({ type: "frameReady" }, "*");
+    window.parent.postMessage({ type: "ready" }, "*");
+    // Also try Farcaster specific format
+    window.parent.postMessage(JSON.stringify({ method: "ready" }), "*");
   } catch(e) {}
-  // Fallback: try again after DOM loads
-  window.addEventListener("load", function() {
-    try {
-      var sdk = window.MiniAppSDK || window.FarcasterMiniAppSDK || (window.farcaster && window.farcaster.sdk);
-      if (sdk && sdk.actions && typeof sdk.actions.ready === "function") {
-        sdk.actions.ready();
-      }
-    } catch(e) {}
-  });
-})();
+}
+sendReady();
+document.addEventListener("DOMContentLoaded", sendReady);
+window.addEventListener("load", sendReady);
 
-// ── 2. Game logic
+// ── Game logic ──
 (function () {
   "use strict";
   var RECEIVER   = "0x580Aab97021D7D379c8d26444eAae332C3014ba7";
