@@ -8,8 +8,7 @@
   <title>Pudgy Jump</title>
   <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
   <meta name="fc:frame" content='{"version":"1","imageUrl":"https://i.imgur.com/48neImL.png","button":{"title":"Play Pudgy Jump","action":{"type":"launch_frame","name":"Pudgy Jump","url":"https://pudgy-play.vercel.app","splashImageUrl":"https://i.imgur.com/48neImL.png","splashBackgroundColor":"#08172b"}}}' />
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.31/dist/index.umd.min.js"></script>
   <style>
     :root{--bg1:#071427;--bg2:#0c2f57;--card:#0c3761ee;--cardBorder:#7da7c9aa;--accent:#9f4dff;--accent2:#c86bff;--text:#fff;--muted:#c9dbf4;--success:#52f7a7;--warn:#f7c752;--shadow:0 18px 50px rgba(0,0,0,.38);}
     *{box-sizing:border-box;margin:0;padding:0}
@@ -235,18 +234,32 @@ var payMode = "eth";
 
 // ── SDK Init ──
 window.addEventListener("load", async function() {
+  // frame-sdk v0.0.31 UMD: global is window.FrameSDK or window.sdk
   try {
-    var sdk = (window.miniapp && window.miniapp.sdk) || (window.frame && window.frame.sdk);
-    if (sdk) {
-      await sdk.actions.ready();
-      // Get user context
-      var ctx = await sdk.context;
-      if (ctx && ctx.user) {
-        USER_FID = ctx.user.fid;
-        USER_NAME = ctx.user.username || ctx.user.displayName || ("fid:" + USER_FID);
-      }
+    var _sdk = window.FrameSDK || window.sdk || null;
+    if (!_sdk && window.frame) _sdk = window.frame;
+    
+    if (_sdk && _sdk.context) {
+      try {
+        var ctx = await _sdk.context;
+        if (ctx && ctx.user) {
+          USER_FID = ctx.user.fid;
+          USER_NAME = ctx.user.username || ctx.user.displayName || ("fid:" + USER_FID);
+        }
+      } catch(ce) { console.warn("context:", ce); }
     }
-  } catch(e) { console.warn("SDK:", e); }
+    
+    // Call ready() — this MUST happen to dismiss splash screen
+    if (_sdk && _sdk.actions && _sdk.actions.ready) {
+      await _sdk.actions.ready();
+    } else {
+      // Fallback: postMessage
+      window.parent.postMessage({ type: "frameReady" }, "*");
+    }
+  } catch(e) { 
+    console.warn("SDK error:", e);
+    window.parent.postMessage({ type: "frameReady" }, "*");
+  }
 
   // Check URL for ref invite code
   var ref = new URLSearchParams(window.location.search).get("ref");
